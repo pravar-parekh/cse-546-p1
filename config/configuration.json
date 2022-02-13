@@ -1,0 +1,7 @@
+{
+    "AIM": "YOUR-AIM-ID",
+    "SQS_REQUEST" : "REQUEST_QUEUE",
+    "SQS_RESPONSE" : "RESPONSE_QUEUE",
+    "description": "A simple Node.js application illustrating usage of the SDK for JavaScript.",
+    "SQS_MESSAGE_RETENTION_PERIOD": 1800
+}
