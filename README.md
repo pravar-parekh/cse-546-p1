@@ -10,6 +10,6 @@ The config json object can be fetched from config-reader.js
 
 
 ### Contributors:
-Eshita
-Pravar
-Susant Kumar Palai
+- Eshita
+- Pravar
+- Susant Kumar Palai
