@@ -64,4 +64,4 @@ if __name__ == "__main__":
             process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
             
-            send_message(file=image_name, output=output)
+            send_message(file=image_name, output="output")
