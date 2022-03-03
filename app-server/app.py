@@ -10,7 +10,6 @@ request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Qu
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
 
 def decode_save_image(image_data, image_name):
-    print(image_data)
     with open(image_name, "wb") as fh:
         fh.write(base64.decodebytes(image_data))
 
@@ -37,7 +36,7 @@ def receive_message():
     for message in response.get("Messages", []):
         message_body = message["Body"]
         
-        image_data = message_body.split(",")
+        image_data = message_body.split(",")[1]
         decode_save_image(image_data, "img/test_00.jpg")
 
         delete_message(message['ReceiptHandle'])
