@@ -50,7 +50,7 @@ def delete_message(receipt_handle):
 def ping_webserver():
     ami_id_req = requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
     print(ami_id_req)    
-    resp = requests.post('dummy.website.com/ping')
+    resp = requests.post('google.com')
     return resp
 
 def save_to_s3():
