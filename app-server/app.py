@@ -36,13 +36,15 @@ def receive_message():
     for message in response.get("Messages", []):
         message_body = message["Body"]
         
-        image_data = message_body.split(",")[1]
-        decode_save_image(image_data, "img/test_00.jpg")
+        message_split = message_body.split(",")
+        image_data = message_split[1]
+        image_name = message_split[0]
+        decode_save_image(image_data, "img/" + image_name)
 
         delete_message(message['ReceiptHandle'])
 
     if len(response.get('Messages', [])) > 0 :
-        return True, "test_00.jpg"
+        return True, image_name
     
     else: 
         return False, ""
@@ -63,8 +65,8 @@ def save_to_s3():
     return
 
 if __name__ == "__main__":
-    run_flag = False
-    while(run_flag == False):
+    loop_count = 0
+    while(loop_count < 6):
         run_flag, image_name = receive_message()
         image_file = "img/" + image_name
 
@@ -76,3 +78,8 @@ if __name__ == "__main__":
             output = output[:len(output)-1]
             
             send_message(file=image_name[:len(image_name) - 4], output=output)
+        
+        else:
+            loop_count += 1
+    
+    ping_webserver()
