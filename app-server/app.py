@@ -48,7 +48,7 @@ def delete_message(receipt_handle):
     print(response)
 
 def ping_webserver():
-    ami_id_req = request.get('http://169.254.169.254/latest/meta-data/instance-id').json()
+    ami_id_req = requests.get('http://169.254.169.254/latest/meta-data/instance-id').json()
     print(ami_id_req)    
     resp = requests.post('dummy.website.com/ping')
     return resp
