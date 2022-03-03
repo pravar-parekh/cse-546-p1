@@ -58,12 +58,12 @@ if __name__ == "__main__":
     run_flag = False
     while(run_flag == False):
         run_flag, image_name = receive_message()
-        image_name = "img/" + image_name
+        image_file = "img/" + image_name
+
         if run_flag:
-            bashCommand = "python3 face_recognition.py " + image_name
+            bashCommand = "python3 face_recognition.py " + image_file
             process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
             output = output.decode("utf-8")
-
 
             send_message(file=image_name, output=output)
