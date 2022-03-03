@@ -2,14 +2,17 @@ from cProfile import run
 from urllib import response
 import boto3, json
 import subprocess
+import requests
 
 sqs = boto3.client("sqs")
 request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Queue'
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
 
-def send_message():
+def send_message(file, output):
 
-    message = {"key": "testing1234"}
+    message = {
+        "File": file,
+        "Output": output}
     response = sqs.send_message(
         QueueUrl=response_queue_url,
         MessageBody=json.dumps(message)
@@ -45,6 +48,13 @@ def delete_message(receipt_handle):
     )
     print(response)
 
+def ping_webserver():
+    resp = requests.post('dummy.website.com/ping')
+    return resp
+
+def save_to_s3():
+    return
+
 if __name__ == "__main__":
     run_flag = False
     while(run_flag == False):
@@ -54,4 +64,5 @@ if __name__ == "__main__":
             bashCommand = "python3 face_recognition.py " + image_name
             process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
-            print(output)
+            
+            send_message(image_name, output)
