@@ -32,7 +32,6 @@ def receive_message():
         message_body = message["Body"]
         print(f"Message body: {message_body}")
         print(f"Receipt Handle: {message['ReceiptHandle']}")
-        send_message()
         delete_message(message['ReceiptHandle'])
 
     if len(response.get('Messages', [])) > 0 :
