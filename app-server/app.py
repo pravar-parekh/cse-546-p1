@@ -1,12 +1,17 @@
 from cProfile import run
-from urllib import response
+from urllib import request, response
 import boto3, json
 import subprocess
 import requests
+import base64
 
 sqs = boto3.client("sqs")
 request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Queue'
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
+
+def decode_save_image(image_data, image_name):
+    with open(image_name, "wb") as fh:
+        fh.write(base64.b64decode(image_data))
 
 def send_message(file, output):
 
@@ -30,12 +35,16 @@ def receive_message():
 
     for message in response.get("Messages", []):
         message_body = message["Body"]
-        print(f"Message body: {message_body}")
-        print(f"Receipt Handle: {message['ReceiptHandle']}")
+        
+        message_split = message_body.split(",")
+        image_data = message_split[1]
+        image_name = message_split[0]
+        decode_save_image(image_data, "img/" + image_name)
+
         delete_message(message['ReceiptHandle'])
 
     if len(response.get('Messages', [])) > 0 :
-        return True, "test_00.jpg"
+        return True, image_name
     
     else: 
         return False, ""
@@ -48,15 +57,16 @@ def delete_message(receipt_handle):
     print(response)
 
 def ping_webserver():
-    resp = requests.post('dummy.website.com/ping')
+    ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text  
+    resp = requests.post('http://www.google.com')
     return resp
 
 def save_to_s3():
     return
 
 if __name__ == "__main__":
-    run_flag = False
-    while(run_flag == False):
+    loop_count = 0
+    while(loop_count < 6):
         run_flag, image_name = receive_message()
         image_file = "img/" + image_name
 
@@ -68,3 +78,8 @@ if __name__ == "__main__":
             output = output[:len(output)-1]
             
             send_message(file=image_name[:len(image_name) - 4], output=output)
+        
+        else:
+            loop_count += 1
+    
+    ping_webserver()
