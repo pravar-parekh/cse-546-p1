@@ -1,5 +1,5 @@
 from cProfile import run
-from urllib import response
+from urllib import request, response
 import boto3, json
 import subprocess
 import requests
@@ -48,7 +48,8 @@ def delete_message(receipt_handle):
     print(response)
 
 def ping_webserver():
-    resp = requests.post('dummy.website.com/ping')
+    ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text  
+    resp = requests.post('http://www.google.com')
     return resp
 
 def save_to_s3():
