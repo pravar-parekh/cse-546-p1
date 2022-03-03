@@ -35,7 +35,7 @@ def receive_message():
         delete_message(message['ReceiptHandle'])
 
     if len(response.get('Messages', [])) > 0 :
-        return True, "img/test_00.jpg"
+        return True, "test_00.jpg"
     
     else: 
         return False, ""
@@ -58,10 +58,12 @@ if __name__ == "__main__":
     run_flag = False
     while(run_flag == False):
         run_flag, image_name = receive_message()
-
+        image_name = "img/" + image_name
         if run_flag:
             bashCommand = "python3 face_recognition.py " + image_name
             process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
-            
-            send_message(file=image_name, output="output")
+            output = output.decode("utf-8")
+
+
+            send_message(file=image_name, output=output)
