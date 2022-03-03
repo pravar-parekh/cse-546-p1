@@ -13,85 +13,41 @@ const responseQUEUE = config.SQS_RESPONSE;
 console.log(requestQUEUE, responseQUEUE)
 
 const helper = require('./helper')
+const sqsutil = require('./sqs-utility')
+
 
 var AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
 
-var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+server.use(express.static('public'));
+const upload = multer({dest: __dirname + '/upload_images'});
 
+// "myfile" is the key of the http payload
+server.post('/', upload.single('myfile'), function(request, respond) {
+        console.log("Request received");
 
-var EC2_CREATE = require("./create-ec2");
-var SQS_CREATE = require("./create-sqs");
-var SQS_DELETE = require("./delete-sqs");
-var SQS_GETURL = require("./getURL-sqs");
-const { SQS } = require("aws-sdk");
-const { request } = require('http');
+        console.log("requested file : " + request.file.originalname)
+        let reqFile = request.file
+        
+        var fs = require('fs');
+       
+        //TODO: Verify the image is of image type and size is less than 250KB
+        var message = helper.base64_encode(reqFile.path, "jpg") // do we care if the extension is jpg (may be one of the last items to fix)
+        console.log(message)
 
-// Load credentials and set region from JSON file
-AWS.config.update({region: 'us-east-1'});
+        console.log("sending a message")
+        sqsutil.sendMessageRequestQueue(message)
+        respond.end(request.file.originalname + ' uploaded!');
 
-var params = {
-    QueueName: requestQUEUE,
-    Attributes: {
-        'DelaySeconds': '0',
-        'MessageRetentionPeriod': '1800'
-    }
-};
+        });
 
-sqs.createQueue(params, function(err, data) {
-    if (err) {
-        console.log("Error in Request creating Queue", err);
-        return;
-    } else {
-        console.log("Success in request creating QUeue", data.QueueUrl);
-        var params = {
-            QueueName: responseQUEUE,
-            Attributes: {
-                'DelaySeconds': '0',
-                'MessageRetentionPeriod': '1800' //replace from json
-            }
-        }
+console.log("starting server")
 
-        sqs.createQueue(params, function (err, data) {
-            if (err) {
-                console.log("Error in creating response Queue", err);
-                return;
-            } else {
-                console.log("Success in  creating response QUeue", data.QueueUrl);
-                server.use(express.static('public'));
-                const upload = multer({dest: __dirname + '/upload_images'});
-
-            // "myfile" is the key of the http payload
-            server.post('/', upload.single('myfile'), function(request, respond) {
-            console.log("Request received");
-            if(request.file) console.log(request.file);
-            
-            // save the image
-            //TODO: Verify the image is of image type and size is less than 250KB
-            var fs = require('fs');
-            fs.rename(__dirname + '/upload_images/' + request.file.filename, __dirname + '/upload_images/' + request.file.originalname, function(err) {
-                if ( err ) console.log('ERROR: ' + err);
-            });
-            
-
-            //   var base64_encoded = helper.base64_encode(file, "jpg")
-
-            respond.end(request.file.originalname + ' uploaded!');
-            });
-            
-            console.log("starting server")
-
-            //You need to configure node.js to listen on 0.0.0.0 so it will be able to accept connections on all the IPs of your machine
-            const hostname = '0.0.0.0';
-            server.listen(PORT, hostname, () => {
-                console.log(`Server running at http://${hostname}:${PORT}/`);
-            });
-         }
-        })
-    }
+//You need to configure node.js to listen on 0.0.0.0 so it will be able to accept connections on all the IPs of your machine
+const hostname = '0.0.0.0';
+server.listen(PORT, hostname, () => {
+    console.log(`Server running at http://${hostname}:${PORT}/`);
 });
-
-
 
 
 
