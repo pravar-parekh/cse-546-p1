@@ -48,8 +48,7 @@ def delete_message(receipt_handle):
     print(response)
 
 def ping_webserver():
-    ami_id_req = requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
-    print(ami_id_req)    
+    ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text  
     resp = requests.post('http://www.google.com')
     return resp
 
@@ -70,5 +69,3 @@ if __name__ == "__main__":
             output = output[:len(output)-1]
             
             send_message(file=image_name[:len(image_name) - 4], output=output)
-
-        res = ping_webserver()
