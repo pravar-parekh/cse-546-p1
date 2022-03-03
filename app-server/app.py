@@ -10,7 +10,7 @@ request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Qu
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
 
 def decode_save_image(image_data, image_name):
-
+    print(image_data)
     with open(image_name, "wb") as fh:
         fh.write(base64.decodebytes(image_data))
 
