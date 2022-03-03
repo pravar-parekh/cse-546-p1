@@ -3,10 +3,16 @@ from urllib import request, response
 import boto3, json
 import subprocess
 import requests
+import base64
 
 sqs = boto3.client("sqs")
 request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Queue'
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
+
+def decode_save_image(image_data, image_name):
+
+    with open(image_name, "wb") as fh:
+        fh.write(base64.decodebytes(image_data))
 
 def send_message(file, output):
 
@@ -30,8 +36,10 @@ def receive_message():
 
     for message in response.get("Messages", []):
         message_body = message["Body"]
-        print(f"Message body: {message_body}")
-        print(f"Receipt Handle: {message['ReceiptHandle']}")
+        
+        image_data = message_body.split(",")
+        decode_save_image(image_data, "img/test_00.jpg")
+
         delete_message(message['ReceiptHandle'])
 
     if len(response.get('Messages', [])) > 0 :
