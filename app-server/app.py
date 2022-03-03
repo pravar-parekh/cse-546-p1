@@ -11,7 +11,7 @@ response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_
 
 def decode_save_image(image_data, image_name):
     with open(image_name, "wb") as fh:
-        fh.write(base64.decodebytes(image_data))
+        fh.write(base64.b64decode(image_data))
 
 def send_message(file, output):
 
