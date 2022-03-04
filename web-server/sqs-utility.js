@@ -111,6 +111,41 @@ function sendMessageResponseQueue(messg) {
       });
 }
 
+function getMessageFromResponseQ() {
+    var params = {
+        MaxNumberOfMessages: 10,
+        VisibilityTimeout: 20,
+        WaitTimeSeconds: 20,
+        QueueUrl: "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE"
+       };
+
+    return new Promise ((resolve, reject) => {
+        sqs.receiveMessage(params, function(err, data) {
+            if (err) {
+              console.log("Receive Error", err);
+              reject("Failed to receive message")
+            } else if (data.Messages) {
+                // console.log("Pre delete MEssages " + data.Messages)
+              // console.log(data.Messages[0])
+              var deleteParams = {
+                QueueUrl: "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE",
+                ReceiptHandle: data.Messages[0].ReceiptHandle
+              };
+              sqs.deleteMessage(deleteParams, function(err, data) {
+                if (err) {
+                  console.log("Delete Error", err);
+                } else {
+                  // console.log("Message Deleted", data);
+                }
+              });
+              // console.log(data.Messages.size)
+              resolve(data.Messages)
+            }
+          });
+    })
+}
+
+getMessageFromResponseQ()
 
 module.exports = { create_SQS_revised, delete_SQS_revised, sleep, getAttribute, sendMessageResponseQueue, 
-                   sendMessageRequestQueue };
+                   sendMessageRequestQueue, getMessageFromResponseQ };
