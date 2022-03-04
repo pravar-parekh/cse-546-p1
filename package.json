@@ -1,5 +1,6 @@
 {
     "dependencies": {
-      "aws-sdk": "^2"
+        "aws-sdk": "^2",
+        "csv-writer": "^1.6.0"
     }
 }
