@@ -2,7 +2,7 @@
 var AWS = require('aws-sdk');
 const { getConfig } = require('../config/config-reader');
 // Set the region 
-AWS.config.update({region: 'us-east-1'});
+AWS.config.update({region: getConfig().region});
 
 const MessageRetentionPeriod = '2000';
 
@@ -78,7 +78,7 @@ function getAttribute(params) {
 function sendMessageRequestQueue(messg) {
     var params = {
         // Remove DelaySeconds parameter and value for FIFO queues
-       DelaySeconds: 0,
+       DelaySeconds: 5,
        MessageBody: messg,
        // MessageDeduplicationId: "TheWhistler",  // Required for FIFO queues
        // MessageGroupId: "Group1",  // Required for FIFO queues
@@ -116,7 +116,7 @@ function getMessageFromResponseQ() {
         MaxNumberOfMessages: 10,
         VisibilityTimeout: 20,
         WaitTimeSeconds: 20,
-        QueueUrl: "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE"
+        QueueUrl: getConfig().SQS_REQUEST_URL
        };
 
     return new Promise ((resolve, reject) => {
@@ -128,7 +128,7 @@ function getMessageFromResponseQ() {
                 // console.log("Pre delete MEssages " + data.Messages)
               // console.log(data.Messages[0])
               var deleteParams = {
-                QueueUrl: "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE",
+                QueueUrl: getConfig().SQS_REQUEST_URL,
                 ReceiptHandle: data.Messages[0].ReceiptHandle
               };
               sqs.deleteMessage(deleteParams, function(err, data) {

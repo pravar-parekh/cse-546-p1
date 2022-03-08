@@ -7,19 +7,18 @@ const PORT = 3000;
 const config_reader = require("../config/config-reader")
 const config = config_reader.getConfig();
 
-const requestQUEUE = config.SQS_REQUEST;
-const responseQUEUE = config.SQS_RESPONSE;
-
-console.log(requestQUEUE, responseQUEUE)
-
 const helper = require('./helper.js')
 const sqsutil = require('./sqs-utility')
 
-
 var AWS = require('aws-sdk');
 const { writeResult } = require('./write-result');
-const { rejects } = require('assert');
-AWS.config.update({region: 'us-east-1'});
+const { scale_up } = require('./scale-ec2');
+
+
+
+const { removeInstanceId, decreaseUsedInstanceByOne, getUsedInstanceCount, increaseUsedInstance } = require('./instanceMap');
+const { terminate_ec2 } = require('./delete-ec2');
+AWS.config.update({region: config.region});
 
 server.use(express.static('public'));
 const upload = multer({dest: __dirname + '/upload_images'});
@@ -40,18 +39,45 @@ server.post('/', upload.single('myfile'), function(request, respond) {
 
         // console.log("sending a message")
         sqsutil.sendMessageRequestQueue(message)
+        scale_up()
         respond.end(request.file.originalname + ' uploaded!');
-
         });
 
 
 //Response syntax : "file:test00,output:paul"
-
 server.post('image_processed', (req, res) => {
-    
+    postProcessImage()
 })
 
-function image_process_request() {
+function processTermiateRequest(instanceId) {
+    console.log("req " + instanceId)
+    
+    removeInstanceId(instanceId).then(() => {
+        terminate_ec2 ("i-0dd3c77410b339587")
+    }).then( () => {
+        {
+            decreaseUsedInstanceByOne().then( () => {
+                getUsedInstanceCount().then (data => console.log("used instances " + data))
+            })
+        }
+    })
+}
+
+// processTermiateRequest("i-0ab9916c5a275da4e");
+
+
+//called when an instance registers to terminate it self
+server.post('terminate', (req, res) => {
+    console.log("received request to terminate " + req)
+    processTermiateRequest(req);
+    res(200)
+})
+
+
+
+ 
+
+function postProcessImage() {
     var fs = require('fs');
 
     console.log("Response received")
@@ -74,12 +100,8 @@ function image_process_request() {
           reject(e)
           return;
       }
-
     })
-    
 }
-
-image_process_request()
 
 console.log("starting server")
 

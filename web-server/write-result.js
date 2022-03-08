@@ -4,15 +4,16 @@ const csvWriter = createCsvWriter({
   header: [
     {id: 'Image', title: 'Image'},
     {id: 'Results', title: 'Results'},
-  ]
+  ],
+  append:true
 });
 
 data =  [{Image:'test', Results:'paul'}]
 
 
-function writeResult(Image, Results) {
-  data = [{Image:Image, Results:Results}]
-  csvWriter.writeRecords(data);
+function writeResult(Image, Result) {
+  data = [{Image:Image, Results:Result}]
+  csvWriter.writeRecords(data, {flags:'a'});
 }
 
 module.exports = { writeResult }

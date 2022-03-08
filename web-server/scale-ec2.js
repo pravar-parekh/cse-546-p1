@@ -3,11 +3,12 @@ var AWS = require('aws-sdk');
 // const { param } = require('express/lib/request');
 const { getConfig } = require('../config/config-reader');
 const { ec2_create } = require('./create-ec2');
-const { getCurrentInstanceCount } = require('./instanceMap');
+const { getCurrentInstanceCount, getUsedInstanceCount, increaseUsedInstance } = require('./instanceMap');
 const { getAttribute } = require('./sqs-utility');
 const config = getConfig()
 // Set the region 
 AWS.config.update({region: 'us-east-1'});
+
 
 
 //consts
@@ -17,8 +18,6 @@ const MAX_INSTANCES = 5 //free trial limit - "1 for webserver"
 //vars
 let instanceMap = new Map();
 
-
-let numberOfMessages = 0;
 
 async function getReqQueueStat() {
     try {
@@ -45,29 +44,45 @@ We can do 19 servers = 12 images per server which should consume 12 * 2 = 24 sec
 If there is more load, the ratio is good enough to trigger the scale early
 
 */
-function findNumberOfInstancesToStart(numberOfMessages) {
-    if (numberOfMessages == 0)
-        return 0
-
-    let used_instances = instanceMap.size;
-    used_instances = 0;
-    let disposal = MAX_INSTANCES - used_instances;
-    numberOfMessages = 72
-
-    let instancesRequired = Math.round(numberOfMessages/12)
-    if (instancesRequired == 0)
-        instancesRequired = 1
+async function findNumberOfInstancesToStart(numberOfMessages) {
     
-    let totalInstancesRequired = Math.min(disposal,instancesRequired);
-    console.log("Total instance that would be run : " + totalInstancesRequired)
-    return totalInstancesRequired;
+    getUsedInstanceCount().
+    then(used_instances => {
+        console.log("findNum used instances " + used_instances);
+        console.log("used_instances " + used_instances);
+
+        if (used_instances < 0)  //precaution
+            return 0;
+        
+        let disposal = MAX_INSTANCES - used_instances;
+
+        console.log("used " + used_instances + " disposal " + disposal)
+        console.log("number of messages " + numberOfMessages)
+
+        let instancesRequired = Math.round(numberOfMessages/2) //TODO: change it to some config value later. To be changed to 12
+        if (instancesRequired == 0)
+            instancesRequired = 1
+        
+        let totalInstancesRequired = Math.min(disposal,instancesRequired);
+        if (totalInstancesRequired + used_instances)
+        console.log("Total instance that would be run : " + totalInstancesRequired)
+            increaseUsedInstance(totalInstancesRequired).then (() => {
+                        launch_instances(totalInstancesRequired)
+            }) .catch ( e => {
+                reject(e)
+            })
+        
+        
+        }).catch(e => {
+            reject(e)
+        })
 }
 
 async function launch_instances(num) {
     console.log("Received request to launach total instances = " + num)
     try {
         for (i = 0; i < num; ++i) {
-            ec2_create(i); // no need to make it await here. Will make the whole thing synchronous
+           await ec2_create(i); // no need to make it await here. Will make the whole thing synchronous
         }
     } catch (err) {
         console.log("Error in launching instance")
@@ -76,33 +91,40 @@ async function launch_instances(num) {
 }
 
 function scale_up () {
+    console.log("scale up is called")
     // get the number of messages in the request queue
     return new Promise ((resolve, reject) => {
         getReqQueueStat().then ((data) => {
                                     // console.log(data);
-                                    return data.Attributes.ApproximateNumberOfMessages
-                                }).then( data => {
-                                    // console.log("data returned" + data)
-                                    return findNumberOfInstancesToStart()
-                                }).then ( val => {
-                                    console.log("Scaling up: Number of new instances to spin " + val)
-                                    if (val == 0) return;
-                                    launch_instances(val)
-                                    resolve("Scale up succeeded")
-                                }).catch (e => {
-                                    console.log("Error in scale up logic \n" + e)
-                                    reject("Scale failed")
-                                })
+                            return data.Attributes.ApproximateNumberOfMessages
+                       }).then( data => {
+                             console.log("number of items in queue data : " + data)
+                             findNumberOfInstancesToStart(data)
+                       }).catch (e => {
+                            console.log("Error in scale up logic \n" + e)
+                            reject("Scale failed")
+                       })
     })
 }
 
-function scale_down() {
 
+function scale_up () {
+    console.log("scale up is called")
+    // get the number of messages in the request queue
+    return new Promise ((resolve, reject) => {
+        getReqQueueStat().then ((data) => {
+                            // console.log(data);
+                            return data.Attributes.ApproximateNumberOfMessages
+                       }).then( data => {
+                             console.log("no of entries in request queue  : " + data)
+                             return findNumberOfInstancesToStart(data)
+                       })
+    })
 }
 
 // console.log(SQS_REQUEST_URL)
 
-scale_up()
-console.log("Scaling done")
+// scale_up()
+// console.log("Scaling done")
 
-module.exports = { scale_up, scale_down, instanceMap }
+module.exports = { scale_up, instanceMap }
