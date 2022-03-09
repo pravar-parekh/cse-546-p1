@@ -1,5 +1,6 @@
 from cProfile import run
 from urllib import request, response
+import webbrowser
 import boto3, json
 from botocore.exceptions import NoCredentialsError
 import subprocess
@@ -9,6 +10,11 @@ import base64
 sqs = boto3.client("sqs")
 request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Queue'
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
+webserver_hostname = ''
+
+model_python_file = "/home/ec2-user/face_recognition.py"
+base_directory = "/home/ec2-user/"
+
 
 def decode_save_image(image_data, image_name):
     with open(image_name, "wb") as fh:
@@ -40,15 +46,16 @@ def receive_message():
         message_split = message_body.split(",")
         image_data = message_split[1]
         image_name = message_split[0]
-        decode_save_image(image_data, "img/" + image_name)
+        webserver_hostname = message_split[2]
+        decode_save_image(image_data, base_directory + "img/" + image_name)
 
         delete_message(message['ReceiptHandle'])
 
     if len(response.get('Messages', [])) > 0 :
-        return True, image_name
+        return True, image_name, webserver_hostname
     
     else: 
-        return False, ""
+        return False, "", ""
 
 def delete_message(receipt_handle):
     response = sqs.delete_message(
@@ -57,10 +64,14 @@ def delete_message(receipt_handle):
     )
     print(response)
 
-def ping_webserver():
-    ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text  
-    resp = requests.post('http://www.google.com')
-    return resp
+def ping_webserver(hostname, ping_type):
+    if ping_type == 1: 
+        ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
+        post_req_text = ami_id
+
+    else: 
+        post_req_text = "image_processed"  
+    resp = requests.post(hostname + ":3000/terminate", post_req_text)
 
 def save_to_s3():
     return
@@ -93,18 +104,23 @@ def upload_result(bucket_name,file_name,txt_data):
 
 if __name__ == "__main__":
     loop_count = 0
-    while(loop_count < 6):
-        run_flag, image_name = receive_message()
+    max_loop_count = 2
+
+    while(loop_count < max_loop_count):
+        run_flag, image_name, webserver_hostname = receive_message()
         image_file = "img/" + image_name
 
         if run_flag:
-            bashCommand = "python3 face_recognition.py " + image_file
+            bashCommand = "python3 "+ model_python_file + " " + base_directory + image_file
             process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
             output = output.decode("utf-8")
             output = output[:len(output)-1]
             
             send_message(file=image_name[:len(image_name) - 4], output=output)
+            loop_count = 0
+
+            ping_webserver(webserver_hostname, 0)
             uploaded = upload_to_aws(r'C:\Users\Dell\Desktop\cloud computing\face_images_100\test_00.jpg',
                                      'ccinputimages', 'Test_00')
             upload_result1 = upload_result('recognitionresults', 'test_00', 'Paul')
@@ -112,4 +128,4 @@ if __name__ == "__main__":
         else:
             loop_count += 1
     
-    ping_webserver()
+    ping_webserver(webserver_hostname, 1)
