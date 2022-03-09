@@ -1,8 +1,8 @@
 // Load the AWS SDK for Node.js
 var AWS = require('aws-sdk');
 const { getConfig } = require('../config/config-reader');
-const { addInstanceIdToMap, getUsedInstanceCount } = require('./instanceMap');
-// Load credentials and set region from JSON file
+const { addInstanceIdToMap, getUsedInstanceCount, printInstanceMap } = require('./instanceMap');
+
 AWS.config.update({region: getConfig().region});
 
 // Create EC2 service object
@@ -10,7 +10,7 @@ var ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
 
 //return 0 : success
 //      -1 : failure
-function ec2_create(nameId) {
+function ec2_create() {
     console.log("ec2 create is called")
     // define AMI
     var instanceParams = {
@@ -32,9 +32,11 @@ function ec2_create(nameId) {
             addInstanceIdToMap(instanceId, data)
             
             getUsedInstanceCount().then((val) => console.log("current instance count : " + val))
+            resolve()
+            // printInstanceMap()
         }).catch( err => {
             console.error(err, err.stack);
-            reject();
+            reject(err);
         });
     })
 

@@ -81,6 +81,7 @@ function addInstanceIdToMap(instanceId, data) {
         .then(async (release) => {
             try {
                 imap.set(instanceId, data)
+                resolve()
             }catch (e){
                 reject(-1);
             }finally {
@@ -90,6 +91,23 @@ function addInstanceIdToMap(instanceId, data) {
    })
 }
 
-module.exports = { addInstanceIdToMap, getUsedInstanceCount, removeInstanceId, increaseUsedInstance, decreaseUsedInstanceByOne,  }
+function printInstanceMap () {
+    return new Promise((resolve, reject) => {
+        mutex.acquire()
+        .then(async (release) => {
+            try {
+                console.log(imap.entries())
+                resolve()
+            } catch (e) {
+                reject(e)
+            } finally {
+                release()
+            }
+        })
+    }) 
+}
+
+module.exports = { addInstanceIdToMap, getUsedInstanceCount, removeInstanceId, increaseUsedInstance, decreaseUsedInstanceByOne,  
+                   printInstanceMap }
 
 

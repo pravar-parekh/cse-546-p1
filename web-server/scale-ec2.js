@@ -100,6 +100,7 @@ function scale_up () {
                        }).then( data => {
                              console.log("number of items in queue data : " + data)
                              findNumberOfInstancesToStart(data)
+                             resolve()
                        }).catch (e => {
                             console.log("Error in scale up logic \n" + e)
                             reject("Scale failed")
@@ -107,20 +108,6 @@ function scale_up () {
     })
 }
 
-
-function scale_up () {
-    console.log("scale up is called")
-    // get the number of messages in the request queue
-    return new Promise ((resolve, reject) => {
-        getReqQueueStat().then ((data) => {
-                            // console.log(data);
-                            return data.Attributes.ApproximateNumberOfMessages
-                       }).then( data => {
-                             console.log("no of entries in request queue  : " + data)
-                             return findNumberOfInstancesToStart(data)
-                       })
-    })
-}
 
 // console.log(SQS_REQUEST_URL)
 

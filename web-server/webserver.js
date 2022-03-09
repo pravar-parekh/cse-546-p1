@@ -73,13 +73,8 @@ server.post('terminate', (req, res) => {
     res(200)
 })
 
-
-
- 
-
 function postProcessImage() {
-    var fs = require('fs');
-
+    
     console.log("Response received")
     return new Promise((resolve, reject) => {
       try {
@@ -93,6 +88,7 @@ function postProcessImage() {
     
                 writeResult(fileName, result)
                 // console.log(fileName, result)
+                resolve()
     
             }
         })
