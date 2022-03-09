@@ -62,7 +62,7 @@ def delete_message(receipt_handle):
         QueueUrl=request_queue_url,
         ReceiptHandle=receipt_handle,
     )
-    print(response)
+    # print(response)
 
 def ping_webserver(hostname, ping_type):
     if ping_type == 1: 
@@ -119,12 +119,11 @@ if __name__ == "__main__":
             send_message(file=image_name[:len(image_name) - 4], output=output)
             loop_count = 0
 
-            ping_webserver(webserver_hostname, 0)
             print(output, image_name)
-
-            uploaded = upload_to_aws(base_directory + image_file,
-                                     'ccinputimages1', image_name)
+            uploaded = upload_to_aws(base_directory + image_file, 'ccinputimages1', image_name)
             upload_result1 = upload_result('recognitionresults1', image_name[:len(image_name) - 4], output)
+
+            ping_webserver(webserver_hostname, 0)
         
         else:
             loop_count += 1
