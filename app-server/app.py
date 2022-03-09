@@ -120,9 +120,9 @@ if __name__ == "__main__":
             loop_count = 0
 
             ping_webserver(webserver_hostname, 0)
-            uploaded = upload_to_aws(r'C:\Users\Dell\Desktop\cloud computing\face_images_100\test_00.jpg',
-                                     'ccinputimages', 'Test_00')
-            upload_result1 = upload_result('recognitionresults', 'test_00', 'Paul')
+            uploaded = upload_to_aws(base_directory + image_file,
+                                     'ccinputimages', image_name)
+            upload_result1 = upload_result('recognitionresults', image_name[:len(image_name) - 4], output)
         
         else:
             loop_count += 1
