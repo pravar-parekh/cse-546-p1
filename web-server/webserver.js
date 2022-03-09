@@ -14,6 +14,10 @@ var AWS = require('aws-sdk');
 const { writeResult } = require('./write-result');
 const { scale_up } = require('./scale-ec2');
 
+var os = require("os");
+var hostname = os.hostname();
+
+
 
 
 const { removeInstanceId, decreaseUsedInstanceByOne, getUsedInstanceCount, increaseUsedInstance } = require('./instanceMap');
@@ -26,6 +30,7 @@ const upload = multer({dest: __dirname + '/upload_images'});
 // "myfile" is the key of the http payload
 server.post('/', upload.single('myfile'), function(request, respond) {
         console.log("Request received");
+        var os = 
 
         console.log("requested file : " + request.file.originalname)
         let reqFile = request.file
@@ -33,9 +38,9 @@ server.post('/', upload.single('myfile'), function(request, respond) {
         var fs = require('fs');
        
         //TODO: Verify the image is of image type and size is less than 250KB
-        var message = helper.base64_encode(reqFile.path, "jpg") // do we care if the extension is jpg (may be one of the last items to fix)
-        message = "file:test, output:paul"
-        // console.log(message)
+        var message = helper.base64_encode(reqFile.path, request.file.originalname, hostname) // do we care if the extension is jpg (may be one of the last items to fix)
+        // message = "file:test, output:paul"
+        console.log(message)
 
         // console.log("sending a message")
         sqsutil.sendMessageRequestQueue(message)
@@ -69,7 +74,7 @@ function processTermiateRequest(instanceId) {
 //called when an instance registers to terminate it self
 server.post('terminate', (req, res) => {
     console.log("received request to terminate " + req)
-    processTermiateRequest(req);
+    processTermiateRequest(req.body);
     res(200)
 })
 
@@ -102,8 +107,8 @@ function postProcessImage() {
 console.log("starting server")
 
 //You need to configure node.js to listen on 0.0.0.0 so it will be able to accept connections on all the IPs of your machine
-var os = require("os");
-var hostname = os.hostname();
+
+// hostname = "0.0.0.0"
 server.listen(PORT, hostname, () => {
     console.log(`Server running at http://${hostname}:${PORT}/`);
 });
