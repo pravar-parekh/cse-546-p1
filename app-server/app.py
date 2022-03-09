@@ -38,7 +38,7 @@ def receive_message():
         WaitTimeSeconds=10,
     )
 
-    print(f"Number of messages received: {len(response.get('Messages', []))}")
+    # print(f"Number of messages received: {len(response.get('Messages', []))}")
 
     for message in response.get("Messages", []):
         message_body = message["Body"]
@@ -120,9 +120,11 @@ if __name__ == "__main__":
             loop_count = 0
 
             ping_webserver(webserver_hostname, 0)
+            print(output, image_name)
+
             uploaded = upload_to_aws(base_directory + image_file,
-                                     'ccinputimages', image_name)
-            upload_result1 = upload_result('recognitionresults', image_name[:len(image_name) - 4], output)
+                                     'ccinputimages1', image_name)
+            upload_result1 = upload_result('recognitionresults1', image_name[:len(image_name) - 4], output)
         
         else:
             loop_count += 1
