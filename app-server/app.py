@@ -29,7 +29,7 @@ def send_message(file, output):
         QueueUrl=response_queue_url,
         MessageBody=json.dumps(message)
     )
-    print(response)
+    # print(response)
 
 def receive_message():
     response = sqs.receive_message(
