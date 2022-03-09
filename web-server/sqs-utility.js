@@ -78,7 +78,7 @@ function getAttribute(params) {
 function sendMessageRequestQueue(messg) {
     var params = {
         // Remove DelaySeconds parameter and value for FIFO queues
-       DelaySeconds: 5,
+       DelaySeconds: 0,
        MessageBody: messg,
        // MessageDeduplicationId: "TheWhistler",  // Required for FIFO queues
        // MessageGroupId: "Group1",  // Required for FIFO queues
@@ -116,7 +116,7 @@ function getMessageFromResponseQ() {
         MaxNumberOfMessages: 10,
         VisibilityTimeout: 20,
         WaitTimeSeconds: 20,
-        QueueUrl: getConfig().SQS_REQUEST_URL
+        QueueUrl: getConfig().SQS_RESPONSE_URL
        };
 
     return new Promise ((resolve, reject) => {
@@ -128,7 +128,7 @@ function getMessageFromResponseQ() {
                 // console.log("Pre delete MEssages " + data.Messages)
               // console.log(data.Messages[0])
               var deleteParams = {
-                QueueUrl: getConfig().SQS_REQUEST_URL,
+                QueueUrl: getConfig().SQS_RESPONSE_URL,
                 ReceiptHandle: data.Messages[0].ReceiptHandle
               };
               sqs.deleteMessage(deleteParams, function(err, data) {
