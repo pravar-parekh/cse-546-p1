@@ -71,10 +71,7 @@ def ping_webserver(hostname, ping_type):
 
     else: 
         post_req_text = "image_processed"  
-    resp = requests.post(hostname + ":3000/terminate", post_req_text)
-
-def save_to_s3():
-    return
+    resp = requests.post("http://" + hostname + ":3000/terminate", post_req_text)
 
 def upload_to_aws(local_file, bucket, s3_file):
     s3 = boto3.client('s3')
