@@ -1,5 +1,5 @@
 {
-    "AMI": "ami-0e0d6ce25c65da960",
+    "AMI": "ami-0506f72ca56a86e78",
     "SQS_REQUEST" : "REQUEST_QUEUE",
     "SQS_RESPONSE" : "RESPONSE_QUEUE",
     "description": "CSE546-ImageProcessingAsAService",
