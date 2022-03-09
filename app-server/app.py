@@ -68,10 +68,12 @@ def ping_webserver(hostname, ping_type):
     if ping_type == 1: 
         ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
         post_req_text = ami_id
+        resp = requests.post("http://" + hostname + ":3000/terminate", post_req_text)
 
     else: 
         post_req_text = "image_processed"  
-    resp = requests.post("http://" + hostname + ":3000/terminate", post_req_text)
+        resp = requests.post("http://" + hostname + ":3000/image_processed", post_req_text)
+    
 
 def upload_to_aws(local_file, bucket, s3_file):
     s3 = boto3.client('s3')
