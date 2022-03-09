@@ -4,7 +4,7 @@
     "SQS_RESPONSE" : "RESPONSE_QUEUE",
     "description": "CSE546-ImageProcessingAsAService",
     "SQS_MESSAGE_RETENTION_PERIOD": 1800,
-    "SQS_REQUEST_URL": "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE",
+    "SQS_REQUEST_URL": "https://sqs.us-east-1.amazonaws.com/547230687929/Request_Queue",
     "SQS_RESPONSE_URL": "https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue",
     "region": "us-east-1"
 }
