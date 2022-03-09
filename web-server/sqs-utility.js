@@ -78,7 +78,7 @@ function getAttribute(params) {
 function sendMessageRequestQueue(messg) {
     var params = {
         // Remove DelaySeconds parameter and value for FIFO queues
-       DelaySeconds: 5,
+       DelaySeconds: 0,
        MessageBody: messg,
        // MessageDeduplicationId: "TheWhistler",  // Required for FIFO queues
        // MessageGroupId: "Group1",  // Required for FIFO queues
