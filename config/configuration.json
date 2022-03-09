@@ -2,7 +2,7 @@
     "AMI": "ami-0e0d6ce25c65da960",
     "SQS_REQUEST" : "REQUEST_QUEUE",
     "SQS_RESPONSE" : "RESPONSE_QUEUE",
-    "description": "A simple Node.js application illustrating usage of the SDK for JavaScript.",
+    "description": "CSE546-ImageProcessingAsAService",
     "SQS_MESSAGE_RETENTION_PERIOD": 1800,
     "SQS_REQUEST_URL": "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE",
     "SQS_RESPONSE_URL": "https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue",
