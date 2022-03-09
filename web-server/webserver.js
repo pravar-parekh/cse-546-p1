@@ -84,6 +84,7 @@ function postProcessImage() {
       try {
         helper.processResponseQ().then(messages => {
             console.log("Total messages" + messages.length)
+            console.log("Message Body: " + messages.Body)
             for (let i = 0; i < messages.length; ++i) {
                 console.log("Main : Message is " + messages[i].Body)
                 let tokens = messages[i].Body.split(",")
