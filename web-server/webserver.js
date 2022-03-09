@@ -52,6 +52,7 @@ server.post('/', upload.single('myfile'), function(request, respond) {
 //Response syntax : "file:test00,output:paul"
 server.post('/image_processed', (req, res) => {
     postProcessImage()
+    res(200);
 })
 
 function processTermiateRequest(instanceId) {
@@ -75,6 +76,7 @@ function processTermiateRequest(instanceId) {
 server.post('/terminate', (req, res) => {
     console.log("received request to terminate " + req)
     processTermiateRequest(req.body);
+    res(200);
 })
 
 function postProcessImage() {
