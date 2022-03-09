@@ -102,7 +102,8 @@ function postProcessImage() {
 console.log("starting server")
 
 //You need to configure node.js to listen on 0.0.0.0 so it will be able to accept connections on all the IPs of your machine
-const hostname = '0.0.0.0';
+var os = require("os");
+var hostname = os.hostname();
 server.listen(PORT, hostname, () => {
     console.log(`Server running at http://${hostname}:${PORT}/`);
 });
