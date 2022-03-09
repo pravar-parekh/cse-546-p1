@@ -11,6 +11,7 @@ sqs = boto3.client("sqs")
 request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Queue'
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
 webserver_hostname = ''
+hostname_permanent = ''
 
 model_python_file = "/home/ec2-user/face_recognition.py"
 base_directory = "/home/ec2-user/"
@@ -46,13 +47,13 @@ def receive_message():
         message_split = message_body.split(",")
         image_data = message_split[1]
         image_name = message_split[0]
-        webserver_hostname = message_split[2]
+        hostname = message_split[2]
         decode_save_image(image_data, base_directory + "img/" + image_name)
 
         delete_message(message['ReceiptHandle'])
 
     if len(response.get('Messages', [])) > 0 :
-        return True, image_name, webserver_hostname
+        return True, image_name, hostname
     
     else: 
         return False, "", ""
@@ -109,6 +110,9 @@ if __name__ == "__main__":
         run_flag, image_name, webserver_hostname = receive_message()
         image_file = "img/" + image_name
 
+        if hostname_permanent == '':
+            hostname_permanent = webserver_hostname
+
         if run_flag:
             bashCommand = "python3 "+ model_python_file + " " + base_directory + image_file
             process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
@@ -127,4 +131,4 @@ if __name__ == "__main__":
         else:
             loop_count += 1
     
-    ping_webserver(webserver_hostname, 1)
+    ping_webserver(hostname_permanent, 1)
