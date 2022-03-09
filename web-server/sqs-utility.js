@@ -116,7 +116,7 @@ function getMessageFromResponseQ() {
         MaxNumberOfMessages: 10,
         VisibilityTimeout: 20,
         WaitTimeSeconds: 20,
-        QueueUrl: getConfig().SQS_REQUEST_URL
+        QueueUrl: getConfig().SQS_RESPONSE_URL
        };
 
     return new Promise ((resolve, reject) => {
@@ -128,7 +128,7 @@ function getMessageFromResponseQ() {
                 // console.log("Pre delete MEssages " + data.Messages)
               // console.log(data.Messages[0])
               var deleteParams = {
-                QueueUrl: getConfig().SQS_REQUEST_URL,
+                QueueUrl: getConfig().SQS_RESPONSE_URL,
                 ReceiptHandle: data.Messages[0].ReceiptHandle
               };
               sqs.deleteMessage(deleteParams, function(err, data) {
