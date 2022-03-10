@@ -52,6 +52,7 @@ server.post('/', upload.single('myfile'), function(request, respond) {
 //Response syntax : "file:test00,output:paul"
 server.post('/image_processed', (req, res) => {
     postProcessImage()
+    res.end('200');
 })
 
 function processTermiateRequest(instanceId) {
@@ -75,6 +76,7 @@ function processTermiateRequest(instanceId) {
 server.post('/terminate', (req, res) => {
     console.log("received request to terminate " + req)
     processTermiateRequest(req.body);
+    res.end('200');
 })
 
 function postProcessImage() {
@@ -84,6 +86,7 @@ function postProcessImage() {
       try {
         helper.processResponseQ().then(messages => {
             console.log("Total messages" + messages.length)
+            console.log("Message Body: " + messages.Body)
             for (let i = 0; i < messages.length; ++i) {
                 console.log("Main : Message is " + messages[i].Body)
                 let tokens = messages[i].Body.split(",")
