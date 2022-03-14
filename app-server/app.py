@@ -21,16 +21,11 @@ def decode_save_image(image_data, image_name):
     with open(image_name, "wb") as fh:
         fh.write(base64.b64decode(image_data))
 
-def send_message(file, output):
-
-    message = {
-        "File": file,
-        "Output": output}
-    response = sqs.send_message(
-        QueueUrl=response_queue_url,
-        MessageBody=json.dumps(message)
-    )
+def send_message(message):
+    response = sqs.send_message(QueueUrl=response_queue_url,MessageBody=json.dumps(message))
     # print(response)
+
+
 
 def receive_message():
     response = sqs.receive_message(
@@ -120,15 +115,19 @@ if __name__ == "__main__":
             output = output.decode("utf-8")
             output = output[:len(output)-1]
             
-            send_message(file=image_name[:len(image_name) - 4], output=output)
+            message = {"File": image_name[:len(image_name) - 4],"Output": output}
+            send_message(message)
             loop_count = 0
 
             print(output, image_name)
-            ping_webserver(webserver_hostname, 0)
             uploaded = upload_to_aws(base_directory + image_file, 'ccinputimages1', image_name[:len(image_name) - 4])
             upload_result1 = upload_result('recognitionresults1', image_name[:len(image_name) - 4], output)
         
         else:
             loop_count += 1
     
-    ping_webserver(hostname_permanent, 1)
+
+    ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
+    print(ami_id)
+    message = {"terminate":ami_id,"end":"end"}
+    send_message({"terminate,"+ami_id})
