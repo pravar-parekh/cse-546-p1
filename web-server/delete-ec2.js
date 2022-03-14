@@ -48,7 +48,8 @@ function terminate_ec2 (instanceId) {
                 if (err) {
                   reject ("Error", err);
                 } else if (data) {
-                    resolve("Success terminating instance")
+                    console.log("deleted instance successfully")
+                    resolve()
                 }
             });
           } else {

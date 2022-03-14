@@ -67,7 +67,7 @@ async function findNumberOfInstancesToStart(numberOfMessages) {
         if (totalInstancesRequired + used_instances)
         console.log("Total instance that would be run : " + totalInstancesRequired)
             increaseUsedInstance(totalInstancesRequired).then (() => {
-                        launch_instances(totalInstancesRequired)
+                launch_instances(totalInstancesRequired)
             }) .catch ( e => {
                 reject(e)
             })
