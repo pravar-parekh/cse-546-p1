@@ -115,31 +115,41 @@ function getMessageFromResponseQ() {
     var params = {
         MaxNumberOfMessages: 10,
         VisibilityTimeout: 20,
-        WaitTimeSeconds: 20,
+        WaitTimeSeconds: 5,
         QueueUrl: getConfig().SQS_RESPONSE_URL
        };
 
     return new Promise ((resolve, reject) => {
+        // console.log("Waiting to receive message from AWS")
         sqs.receiveMessage(params, function(err, data) {
+          //  console.log("Absolute response received")
+          //  console.log(data.Messages)
+          //  console.log(err)
             if (err) {
               console.log("Receive Error", err);
               reject("Failed to receive message")
             } else if (data.Messages) {
-                // console.log("Pre delete MEssages " + data.Messages)
-              // console.log(data.Messages[0])
-              var deleteParams = {
-                QueueUrl: getConfig().SQS_RESPONSE_URL,
-                ReceiptHandle: data.Messages[0].ReceiptHandle
-              };
-              sqs.deleteMessage(deleteParams, function(err, data) {
-                if (err) {
-                  console.log("Delete Error", err);
-                } else {
-                  // console.log("Message Deleted", data);
-                }
-              });
-              // console.log(data.Messages.size)
-              resolve(data.Messages)
+              // console.log("received some response from AWS Q")
+              if (data.Messages.length == 0) {
+                // console.log("Message length is zero")
+                resolve(data.Messages)
+              } else {
+                // console.log("Going to delete the message")
+                resolve(data.Messages)
+                var deleteParams = {
+                  QueueUrl: getConfig().SQS_RESPONSE_URL,
+                  ReceiptHandle: data.Messages[0].ReceiptHandle
+                };
+                sqs.deleteMessage(deleteParams, function(err, data) {
+                  if (err) {
+                    console.log("Delete Error from AWS for response QUEUE: Most likely AWS side error", err);
+                  } else {
+                    // console.log("Deletion successfull");
+                  }
+                });
+              }
+            } else {
+              resolve()
             }
           });
     })

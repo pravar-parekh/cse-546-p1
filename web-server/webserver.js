@@ -40,7 +40,7 @@ server.post('/', upload.single('myfile'), function(request, respond) {
         //TODO: Verify the image is of image type and size is less than 250KB
         var message = helper.base64_encode(reqFile.path, request.file.originalname, hostname) // do we care if the extension is jpg (may be one of the last items to fix)
         // message = "file:test, output:paul"
-        console.log(message)
+        // console.log(message)
 
         // console.log("sending a message")
         sqsutil.sendMessageRequestQueue(message)
@@ -49,68 +49,89 @@ server.post('/', upload.single('myfile'), function(request, respond) {
         });
 
 
-//Response syntax : "file:test00,output:paul"
-server.post('/image_processed', (req, res) => {
-    postProcessImage()
-    res.end('200');
-})
 
+
+
+//format: terminate,<instance-id>
 function processTermiateRequest(instanceId) {
-    console.log("req " + instanceId)
+    console.log("req received to terminate " + instanceId)
     
-    removeInstanceId(instanceId).then(() => {
-        terminate_ec2 ("i-0dd3c77410b339587")
-    }).then( () => {
-        {
-            decreaseUsedInstanceByOne().then( () => {
-                getUsedInstanceCount().then (data => console.log("used instances " + data))
+    try {
+        removeInstanceId(instanceId).then(() => {
+            terminate_ec2 (instanceId).then( () => {
+
+            }).catch(e => {
+                console.log("failed to remove terminating instance : Non Fatal failure")
             })
-        }
-    })
+        }).then( () => {
+            {
+                decreaseUsedInstanceByOne().then( () => {
+                    getUsedInstanceCount().then (data => console.log("used instances " + data))
+                    .catch(e => {console.log("err in getUsedInstanceCount")})
+                }).catch (e => {
+                        console.log("Error in decreaseUsedInstanceByOne")
+                })
+            }
+        }).catch (e => {
+            console.log("Error remove InstanceId")
+        })
+    } catch (e){ 
+        console.log("There is some error in deleting instance")
+    }
 }
 
-// processTermiateRequest("i-0ab9916c5a275da4e");
 
 
-//called when an instance registers to terminate it self
-server.post('/terminate', (req, res) => {
-    console.log("received request to terminate " + req)
-    processTermiateRequest(req.body);
-    res.end('200');
-})
+
 
 function postProcessImage() {
     
-    console.log("Response received")
+    // console.log("Response process request received")
+    let fileName = ""
+    let result = ""
     return new Promise((resolve, reject) => {
       try {
-        helper.processResponseQ().then(messages => {
-            console.log("Total messages" + messages.length)
-            console.log("Message Body: " + messages.Body)
-            for (let i = 0; i < messages.length; ++i) {
-                console.log("Main : Message is " + messages[i].Body)
-                let tokens = messages[i].Body.split(",")
-                let fileName = tokens[0].split(":")[1]
-                let result = tokens[1].split(":")[1]
-    
-                writeResult(fileName, result)
-                // console.log(fileName, result)
+            // console.log("Going to wait for messages in response Q")
+            helper.processResponseQ().then(messages => {
+                if (messages != null) {
+                    // console.log("Total messages" + messages.length)
+                    // console.log("Message Body: " + messages.Body)
+                    for (let i = 0; i < messages.length; ++i) {
+                        console.log("Main : Message is " + messages[i].Body)
+                        let tokens = messages[i].Body.split(",")
+                        console.log(tokens[0])
+                        if (tokens[0] == "terminate") {
+                            processTermiateRequest(tokens[1].trim())
+                        } else {
+                            fileName = tokens[0].split(":")[1]
+                            result = tokens[1].split(":")[1]
+                        }
+                        writeResult(fileName, result)
+                        // console.log(fileName, result)s
+                        resolve()
+                        // postProcessImageV2()
+                    }
+                }
+            }).catch(e => {
+                console.log("some error in response queue received " + e)
+                reject(e)
+            }).finally( () => {
                 resolve()
-    
-            }
-        })
+                postProcessImage()
+            }) 
       } catch (e) {
           reject(e)
-          return;
+      } finally {
       }
     })
 }
 
+postProcessImage()
 console.log("starting server")
 
 //You need to configure node.js to listen on 0.0.0.0 so it will be able to accept connections on all the IPs of your machine
 
-// hostname = "0.0.0.0"
+// hostname = "0.0.0.0"`
 server.listen(PORT, hostname, () => {
     console.log(`Server running at http://${hostname}:${PORT}/`);
 });
