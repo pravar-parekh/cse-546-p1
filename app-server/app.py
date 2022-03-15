@@ -102,7 +102,7 @@ def upload_result(bucket_name,file_name,txt_data):
 
 if __name__ == "__main__":
     loop_count = 0
-    max_loop_count = 2
+    max_loop_count = 1
 
     while(loop_count < max_loop_count):
         run_flag, image_name, webserver_hostname = receive_message()

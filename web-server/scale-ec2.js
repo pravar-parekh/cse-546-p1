@@ -13,7 +13,7 @@ AWS.config.update({region: 'us-east-1'});
 
 //consts
 const SQS_REQUEST_URL = config.SQS_REQUEST_URL
-const MAX_INSTANCES = 5 //free trial limit - "1 for webserver"
+const MAX_INSTANCES = 8 //free trial limit - "1 for webserver"
 
 //vars
 let instanceMap = new Map();
