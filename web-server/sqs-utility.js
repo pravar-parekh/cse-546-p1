@@ -113,9 +113,9 @@ function sendMessageResponseQueue(messg) {
 
 function getMessageFromResponseQ() {
     var params = {
-        MaxNumberOfMessages: 10,
-        VisibilityTimeout: 20,
-        WaitTimeSeconds: 5,
+        MaxNumberOfMessages: 1,
+        VisibilityTimeout: 120,
+        WaitTimeSeconds: 15,
         QueueUrl: getConfig().SQS_RESPONSE_URL
        };
 
