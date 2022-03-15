@@ -8,10 +8,13 @@ import requests
 import base64
 
 sqs = boto3.client("sqs")
-request_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Request_Queue'
-response_queue_url = 'https://sqs.us-east-1.amazonaws.com/547230687929/Response_Queue'
 webserver_hostname = ''
 hostname_permanent = ''
+
+f = open("../config/configuration.json")
+data =  json.load(f)
+request_queue_url = data["SQS_REQUEST_URL"]
+response_queue_url = data["SQS_RESPONSE_URL"]
 
 model_python_file = "/home/ec2-user/face_recognition.py"
 base_directory = "/home/ec2-user/"
