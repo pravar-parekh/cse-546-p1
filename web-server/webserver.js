@@ -58,7 +58,7 @@ function processTermiateRequest(instanceId) {
     instanceId = instanceId.replace(/"/g,'')
     console.log(instanceId)
 
-    
+    //return
     try {
         removeInstanceId(instanceId).then(() => {
             terminate_ec2 (instanceId).then( () => {
@@ -105,8 +105,9 @@ function postProcessImage() {
                         } else {
                             fileName = tokens[0].split(":")[1]
                             result = tokens[1].split(":")[1]
+                            writeResult(fileName, result)
                         }
-                        writeResult(fileName, result)
+
                         // console.log(fileName, result)s
                         resolve()
                         // postProcessImageV2()

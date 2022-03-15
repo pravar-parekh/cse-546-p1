@@ -11,7 +11,7 @@ sqs = boto3.client("sqs")
 webserver_hostname = ''
 hostname_permanent = ''
 
-f = open("../config/configuration.json")
+f = open("/home/ec2-user/cse-546-p1/config/configuration.json")
 data =  json.load(f)
 request_queue_url = data["SQS_REQUEST_URL"]
 response_queue_url = data["SQS_RESPONSE_URL"]
@@ -123,8 +123,8 @@ if __name__ == "__main__":
             loop_count = 0
 
             print(output, image_name)
-            uploaded = upload_to_aws(base_directory + image_file, 'ccinputimages1', image_name[:len(image_name) - 4])
-            upload_result1 = upload_result('recognitionresults1', image_name[:len(image_name) - 4], output)
+            #uploaded = upload_to_aws(base_directory + image_file, 'ccinputimages1', image_name[:len(image_name) - 4])
+            #upload_result1 = upload_result('recognitionresults1', image_name[:len(image_name) - 4], output)
         
         else:
             loop_count += 1
@@ -133,4 +133,4 @@ if __name__ == "__main__":
     ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
     print(ami_id)
     message = {"terminate":ami_id,"end":"end"}
-    send_message({"terminate,"+ami_id})
+    send_message(message)
