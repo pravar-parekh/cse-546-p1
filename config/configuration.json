@@ -5,7 +5,7 @@
     "description": "CSE546-ImageProcessingAsAService",
     "SQS_MESSAGE_RETENTION_PERIOD": 1800,
     "keyPair":"common",
-    "SecurityGroups":"launch-wizard-8",
+    "SecurityGroups":["launch-wizard-8"],
 
     "SQS_RESPONSE_URL" : "https://sqs.us-east-1.amazonaws.com/960008524091/RESPONSE_QUEUE",
     "SQS_REQUEST_URL": "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE",
