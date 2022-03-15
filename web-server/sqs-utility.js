@@ -149,6 +149,7 @@ function getMessageFromResponseQ() {
                 });
               }
             } else {
+              // console.log("void")
               resolve()
             }
           });

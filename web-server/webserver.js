@@ -55,6 +55,9 @@ server.post('/', upload.single('myfile'), function(request, respond) {
 //format: terminate,<instance-id>
 function processTermiateRequest(instanceId) {
     console.log("req received to terminate " + instanceId)
+    instanceId = instanceId.replace(/"/g,'')
+    console.log(instanceId)
+
     
     try {
         removeInstanceId(instanceId).then(() => {
@@ -81,9 +84,6 @@ function processTermiateRequest(instanceId) {
 }
 
 
-
-
-
 function postProcessImage() {
     
     // console.log("Response process request received")
@@ -100,8 +100,8 @@ function postProcessImage() {
                         console.log("Main : Message is " + messages[i].Body)
                         let tokens = messages[i].Body.split(",")
                         console.log(tokens[0])
-                        if (tokens[0] == "terminate") {
-                            processTermiateRequest(tokens[1].trim())
+                        if (tokens[0].includes("terminate")) {
+                            processTermiateRequest(tokens[0].split(":")[1].trim())
                         } else {
                             fileName = tokens[0].split(":")[1]
                             result = tokens[1].split(":")[1]
