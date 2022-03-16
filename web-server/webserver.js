@@ -18,6 +18,8 @@ var os = require("os");
 var hostname = os.hostname();
 
 
+var resultMap = new Map()
+
 
 
 const { removeInstanceId, decreaseUsedInstanceByOne, getUsedInstanceCount, increaseUsedInstance } = require('./instanceMap');
@@ -45,11 +47,33 @@ server.post('/', upload.single('myfile'), function(request, respond) {
         // console.log("sending a message")
         sqsutil.sendMessageRequestQueue(message)
         scale_up()
-        respond.end(request.file.originalname + ' uploaded!');
-        });
+        
+        let fileName = request.file.originalname.split(".")[0]
+        wait_up_response(fileName).then( result => {
+            // respond.end(request.file.originalname + ' uploaded!\n'+'Classification result :' + result);
+            respond.end(result);
+        }).catch( e => {
+            console.log("Error " + e)
+            respond.end(request.file.originalname + ' Failed to upload');
+        })
+    });
 
 
-
+function wait_up_response(fileName) {
+    return new Promise((resolve, reject) => {
+        sqsutil.sleep(5000).then( () => {
+            // console.log(fileName)
+            if (resultMap.has(fileName)) {
+                // console.log("found response" + resultMap.get(fileName))
+                resolve(resultMap.get(fileName))
+            } else {
+                resolve (wait_up_response(fileName))
+            }
+        }).catch((e) => {
+            reject(e)
+        })
+    })
+}
 
 
 //format: terminate,<instance-id>
@@ -106,6 +130,8 @@ function postProcessImage() {
                             fileName = tokens[0].split(":")[1]
                             result = tokens[1].split(":")[1]
                             writeResult(fileName, result)
+                            resultMap.set(fileName, result)
+                            // console.log("map is "+ resultMap.get(fileName))
                         }
 
                         // console.log(fileName, result)s
@@ -132,7 +158,7 @@ console.log("starting server")
 
 //You need to configure node.js to listen on 0.0.0.0 so it will be able to accept connections on all the IPs of your machine
 
-// hostname = "0.0.0.0"`
+// hostname = "0.0.0.0"
 server.listen(PORT, hostname, () => {
     console.log(`Server running at http://${hostname}:${PORT}/`);
 });
