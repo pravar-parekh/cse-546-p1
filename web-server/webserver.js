@@ -127,8 +127,8 @@ function postProcessImage() {
                         if (tokens[0].includes("terminate")) {
                             processTermiateRequest(tokens[0].split(":")[1].trim())
                         } else {
-                            fileName = tokens[0].split(":")[1]
-                            result = tokens[1].split(":")[1]
+                            fileName = tokens[0].split(":")[1].replace(/"/g,'').trim()
+                            result = tokens[1].split(":")[1].replace(/"/g,'').replace(/}/g,'').trim()
                             writeResult(fileName, result)
                             resultMap.set(fileName, result)
                             // console.log("map is "+ resultMap.get(fileName))
