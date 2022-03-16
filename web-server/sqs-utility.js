@@ -55,7 +55,7 @@ function delete_SQS_revised(name) {
 function sleep(time) {
     return new Promise((res, rej) => {
         setTimeout(() => {
-            console.log(`sleeping for ${time}`);
+            // console.log(`sleeping for ${time}`);
             res();
         }, time);
     });
