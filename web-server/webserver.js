@@ -65,7 +65,9 @@ function wait_up_response(fileName) {
             // console.log(fileName)
             if (resultMap.has(fileName)) {
                 // console.log("found response" + resultMap.get(fileName))
-                resolve(resultMap.get(fileName))
+                var result = resultMap.get(fileName)
+                resultMap.delete(fileName)
+                resolve(result)
             } else {
                 resolve (wait_up_response(fileName))
             }

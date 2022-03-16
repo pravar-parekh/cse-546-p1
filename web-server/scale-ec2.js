@@ -16,7 +16,7 @@ const scaleMutex = new Mutex()
 
 //consts
 const SQS_REQUEST_URL = config.SQS_REQUEST_URL
-const MAX_INSTANCES = 20 //free trial limit - "1 for webserver"
+const MAX_INSTANCES = 18 //free trial limit - "1 for webserver"
 
 //vars
 let instanceMap = new Map();
@@ -59,14 +59,14 @@ async function findNumberOfInstancesToStart(numberOfMessages) {
             getNumberOfInstances().
             then(used_instances => {
             console.log("findNum used instances " + used_instances);
-            console.log("used_instances " + used_instances);
+            console.log("used_instances " + used_instances - 1);
 
             if (used_instances < 0)  //precaution
                 return 0;
             
             let disposal = MAX_INSTANCES - used_instances;
 
-            console.log("used " + used_instances + " disposal " + disposal)
+            // console.log("used " + used_instances + " disposal " + disposal)
             console.log("number of messages " + numberOfMessages)
 
             let instancesRequired = Math.round(numberOfMessages/20) 
