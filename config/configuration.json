@@ -10,5 +10,7 @@
     "SQS_RESPONSE_URL" : "https://sqs.us-east-1.amazonaws.com/960008524091/RESPONSE_QUEUE",
     "SQS_REQUEST_URL": "https://sqs.us-east-1.amazonaws.com/960008524091/REQUEST_QUEUE",
     "configPath":"/home/ec2-user/cse-546-p1/config/configuration.json",
-    "region": "us-east-1"
+    "region": "us-east-1",
+    "s3-INPUT":"c23-input",
+    "s3-RESULT":"c23-result"
 }

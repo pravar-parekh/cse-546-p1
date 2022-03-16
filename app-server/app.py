@@ -15,6 +15,8 @@ f = open("/home/ec2-user/cse-546-p1/config/configuration.json")
 data =  json.load(f)
 request_queue_url = data["SQS_REQUEST_URL"]
 response_queue_url = data["SQS_RESPONSE_URL"]
+s3_input_bucket = data["s3-INPUT"]
+s3_result_bucket = data["s3-RESULT"]
 
 model_python_file = "/home/ec2-user/face_recognition.py"
 base_directory = "/home/ec2-user/"
@@ -123,8 +125,8 @@ if __name__ == "__main__":
             loop_count = 0
 
             print(output, image_name)
-            #uploaded = upload_to_aws(base_directory + image_file, 'ccinputimages1', image_name[:len(image_name) - 4])
-            #upload_result1 = upload_result('recognitionresults1', image_name[:len(image_name) - 4], output)
+            uploaded = upload_to_aws(base_directory + image_file, s3_input_bucket, image_name[:len(image_name) - 4])
+            upload_result1 = upload_result(s3_result_bucket, image_name[:len(image_name) - 4], output)
         
         else:
             loop_count += 1
