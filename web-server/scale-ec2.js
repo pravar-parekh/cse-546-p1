@@ -2,18 +2,21 @@
 var AWS = require('aws-sdk');
 // const { param } = require('express/lib/request');
 const { getConfig } = require('../config/config-reader');
-const { ec2_create } = require('./create-ec2');
+const { ec2_create, v2_ec2_create } = require('./create-ec2');
+const { getNumberOfInstances } = require('./instance-count');
 const { getCurrentInstanceCount, getUsedInstanceCount, increaseUsedInstance } = require('./instanceMap');
-const { getAttribute } = require('./sqs-utility');
+const { getAttribute, sleep } = require('./sqs-utility');
 const config = getConfig()
 // Set the region 
 AWS.config.update({region: 'us-east-1'});
+const { Mutex } = require("async-mutex");
+const scaleMutex = new Mutex()
 
 
 
 //consts
 const SQS_REQUEST_URL = config.SQS_REQUEST_URL
-const MAX_INSTANCES = 8 //free trial limit - "1 for webserver"
+const MAX_INSTANCES = 20 //free trial limit - "1 for webserver"
 
 //vars
 let instanceMap = new Map();
@@ -45,37 +48,187 @@ If there is more load, the ratio is good enough to trigger the scale early
 
 */
 async function findNumberOfInstancesToStart(numberOfMessages) {
-    
-    getUsedInstanceCount().
-    then(used_instances => {
-        console.log("findNum used instances " + used_instances);
-        console.log("used_instances " + used_instances);
+    return new Promise((resolve, reject) => {
+    scaleMutex.acquire()
+    .then(async (release) => {
+    try { 
+        console.log("lock acquired")
 
-        if (used_instances < 0)  //precaution
-            return 0;
-        
-        let disposal = MAX_INSTANCES - used_instances;
+            console.log("slept for 5 seconds")
+            
+            getNumberOfInstances().
+            then(used_instances => {
+            console.log("findNum used instances " + used_instances);
+            console.log("used_instances " + used_instances);
 
-        console.log("used " + used_instances + " disposal " + disposal)
-        console.log("number of messages " + numberOfMessages)
+            if (used_instances < 0)  //precaution
+                return 0;
+            
+            let disposal = MAX_INSTANCES - used_instances;
 
-        let instancesRequired = Math.round(numberOfMessages/2) //TODO: change it to some config value later. To be changed to 12
-        if (instancesRequired == 0)
-            instancesRequired = 1
-        
-        let totalInstancesRequired = Math.min(disposal,instancesRequired);
-        if (totalInstancesRequired + used_instances)
-        console.log("Total instance that would be run : " + totalInstancesRequired)
-            increaseUsedInstance(totalInstancesRequired).then (() => {
+            console.log("used " + used_instances + " disposal " + disposal)
+            console.log("number of messages " + numberOfMessages)
+
+            let instancesRequired = Math.round(numberOfMessages/20) 
+            //TODO: change it to some config value later. To be changed to 12
+            if (instancesRequired == 0)
+                instancesRequired = 1
+
+            let totalInstancesRequired = Math.min(disposals,instancesRequired);
+            console.log("Total instance that would be run : " + totalInstancesRequired)
+            // launch_instances(totalInstancesRequired)
+            /*increaseUsedInstance(totalInstancesRequired).then (() => {
                 launch_instances(totalInstancesRequired)
             }) .catch ( e => {
                 reject(e)
             })
-        
-        
-        }).catch(e => {
+            */
+        //    console.log("done with creation of ec2")
+           return totalInstancesRequired;
+             }).then( n => {
+            console.log("received rquest to launch : " + n)
+            launch_instances(n).then(() => {console.log("Ec2 creation successfull")}).catch(  e => {"failed to launch ec2 "})
+            }).then(() => {
+                resolve()
+            }).catch(e => {
+            console.log("failed to get total instances running/pending")
             reject(e)
         })
+        
+    } catch (e) {
+        console.log("failed to acquire mutex");
+        reject(e)
+    } finally {
+        console.log("lock released")
+        release()
+
+    }
+
+    }).catch(e => {
+        console.log("could not acquire mutex")
+    })
+    })
+
+    // getNumberOfInstances().
+    // then(used_instances => {
+    //     console.log("findNum used instances " + used_instances);
+    //     console.log("used_instances " + used_instances);
+
+    //     if (used_instances < 0)  //precaution
+    //         return 0;
+        
+    //     let disposal = MAX_INSTANCES - used_instances;
+
+    //     console.log("used " + used_instances + " disposal " + disposal)
+    //     console.log("number of messages " + numberOfMessages)
+
+    //     let instancesRequired = Math.round(numberOfMessages/20) //TODO: change it to some config value later. To be changed to 12
+    //     if (instancesRequired == 0)
+    //         instancesRequired = 1
+        
+    //     let totalInstancesRequired = Math.min(disposal,instancesRequired);
+    //     if (totalInstancesRequired + used_instances)
+    //     console.log("Total instance that would be run : " + totalInstancesRequired)
+    //         increaseUsedInstance(totalInstancesRequired).then (() => {
+    //             launch_instances(totalInstancesRequired)
+    //         }) .catch ( e => {
+    //             reject(e)
+    //         })
+        
+        
+    //     }).catch(e => {
+    //         console.log("failed to get total instances running/pending")
+    //         reject(e)
+    //     })
+}
+
+async function v2_findNumberOfInstancesToStart(numberOfMessages) {
+    console.log("v2 findnum is being called")
+    return new Promise((resolve, reject) => {
+    scaleMutex.acquire()
+    .then(async (release) => {
+    try { 
+        console.log("lock acquired")
+        var data = await getReqQueueStat()
+        numberOfMessages = data.Attributes.ApproximateNumberOfMessages
+        
+        var used_instances = await getNumberOfInstances()
+
+        console.log("NUMBERRR of used instances " + used_instances);
+        console.log("NUMBERRR of queue elements " + numberOfMessages)
+        
+        let disposal = MAX_INSTANCES - used_instances;
+
+        console.log("used " + used_instances + " disposal " + disposal)
+
+
+        let instancesRequired = Math.round(numberOfMessages/20) 
+        //TODO: change it to some config value later. To be changed to 12
+        if (instancesRequired == 0)
+            instancesRequired = 1
+
+        let totalInstancesRequired = Math.min(disposal,instancesRequired);
+        console.log("Total instance that would be run : " + totalInstancesRequired)
+        // launch_instances(totalInstancesRequired)
+        /*increaseUsedInstance(totalInstancesRequired).then (() => {
+            launch_instances(totalInstancesRequired)
+        }) .catch ( e => {
+            reject(e)
+        })
+        */
+    //    console.log("done with creation of ec2")
+        // return totalInstancesRequired;
+        if (totalInstancesRequired < 1) {
+            return
+        }
+
+        await launch_instances(totalInstancesRequired)
+        resolve()
+    } catch (e) {
+        console.log("failed to acquire mutex");
+        reject(e)
+    } finally {
+        console.log("lock released")
+        release()
+
+    }
+
+    }).catch(e => {
+        console.log("could not acquire mutex")
+    })
+    })
+
+    // getNumberOfInstances().
+    // then(used_instances => {
+    //     console.log("findNum used instances " + used_instances);
+    //     console.log("used_instances " + used_instances);
+
+    //     if (used_instances < 0)  //precaution
+    //         return 0;
+        
+    //     let disposal = MAX_INSTANCES - used_instances;
+
+    //     console.log("used " + used_instances + " disposal " + disposal)
+    //     console.log("number of messages " + numberOfMessages)
+
+    //     let instancesRequired = Math.round(numberOfMessages/20) //TODO: change it to some config value later. To be changed to 12
+    //     if (instancesRequired == 0)
+    //         instancesRequired = 1
+        
+    //     let totalInstancesRequired = Math.min(disposal,instancesRequired);
+    //     if (totalInstancesRequired + used_instances)
+    //     console.log("Total instance that would be run : " + totalInstancesRequired)
+    //         increaseUsedInstance(totalInstancesRequired).then (() => {
+    //             launch_instances(totalInstancesRequired)
+    //         }) .catch ( e => {
+    //             reject(e)
+    //         })
+        
+        
+    //     }).catch(e => {
+    //         console.log("failed to get total instances running/pending")
+    //         reject(e)
+    //     })
 }
 
 async function launch_instances(num) {
@@ -94,17 +247,13 @@ function scale_up () {
     console.log("scale up is called")
     // get the number of messages in the request queue
     return new Promise ((resolve, reject) => {
-        getReqQueueStat().then ((data) => {
-                                    // console.log(data);
-                            return data.Attributes.ApproximateNumberOfMessages
-                       }).then( data => {
-                             console.log("number of items in queue data : " + data)
-                             findNumberOfInstancesToStart(data)
-                             resolve()
-                       }).catch (e => {
-                            console.log("Error in scale up logic \n" + e)
-                            reject("Scale failed")
-                       })
+        try { 
+            v2_findNumberOfInstancesToStart(data)
+            resolve()
+        } catch (e) {
+            reject(e)
+            console.log("Error in scale up")
+        }
     })
 }
 
