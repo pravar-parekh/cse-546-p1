@@ -3,6 +3,7 @@ from urllib import request, response
 import webbrowser
 import boto3, json
 from botocore.exceptions import NoCredentialsError
+from ec2_metadata import ec2_metadata
 import subprocess
 import requests
 import base64
@@ -101,6 +102,10 @@ def upload_result(bucket_name,file_name,txt_data):
 
     res = result.get('ResponseMetadata')
 
+#### pip3 install ec2-metadata
+def terminate_instance():
+    client = boto3.client('ec2')
+    client.terminate_instances(InstanceIds=[ec2_metadata.instance_id])
 
 if __name__ == "__main__":
     loop_count = 0
