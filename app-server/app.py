@@ -130,7 +130,7 @@ if __name__ == "__main__":
             loop_count = 0
 
             print(output, image_name)
-            uploaded = upload_to_aws(base_directory + image_file, s3_input_bucket, image_name[:len(image_name) - 4])
+            uploaded = upload_to_aws(base_directory + image_file, s3_input_bucket, image_name)
             upload_result1 = upload_result(s3_result_bucket, image_name[:len(image_name) - 4], output)
         
         else:
