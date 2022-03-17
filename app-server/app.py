@@ -137,7 +137,8 @@ if __name__ == "__main__":
             loop_count += 1
     
 
-    ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
-    print(ami_id)
-    message = {"terminate":ami_id,"end":"end"}
-    send_message(message)
+    # ami_id= requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
+    # print(ami_id)
+    # message = {"terminate":ami_id,"end":"end"}
+    # send_message(message)
+    terminate_instance()
